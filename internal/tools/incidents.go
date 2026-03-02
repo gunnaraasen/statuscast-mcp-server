@@ -57,8 +57,8 @@ func getIncidentHandler(c *client.Client) mcp.ToolHandlerFor[getIncidentArgs, an
 type updateIncidentArgs struct {
 	IncidentID         int    `json:"incident_id"                    jsonschema:"The ID of the incident to update (required)"`
 	IncidentType       int    `json:"incident_type,omitempty"        jsonschema:"Updated incident type: 1=ServiceUnavailable, 2=ScheduledMaintenance, 3=Informational"`
-	Subject            string `json:"subject,omitempty"              jsonschema:"Updated incident subject/title"`
-	Message            string `json:"message,omitempty"              jsonschema:"Updated incident message body"`
+	Subject            string `json:"subject"                        jsonschema:"Incident subject/title (required by the API)"`
+	Message            string `json:"message"                        jsonschema:"Incident message body (required by the API)"`
 	Active             *bool  `json:"active,omitempty"               jsonschema:"Set to true to activate or false to deactivate/resolve the incident"`
 	AffectedComponents []int  `json:"affected_components,omitempty"  jsonschema:"Updated list of affected component IDs"`
 }

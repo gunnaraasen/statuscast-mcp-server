@@ -11,15 +11,15 @@ import (
 type createSubscriberArgs struct {
 	Email          string `json:"email"                     jsonschema:"Email address of the subscriber (required)"`
 	Components     []int  `json:"components,omitempty"      jsonschema:"Component IDs the subscriber wants to receive notifications for"`
-	AudienceGroups []int  `json:"audience_groups,omitempty" jsonschema:"Audience group IDs to add the subscriber to"`
+	Groups         []int  `json:"groups,omitempty"          jsonschema:"Group IDs to subscribe to"`
 }
 
 func createSubscriberHandler(c *client.Client) mcp.ToolHandlerFor[createSubscriberArgs, any] {
 	return func(ctx context.Context, _ *mcp.CallToolRequest, args createSubscriberArgs) (*mcp.CallToolResult, any, error) {
 		subscriber, err := c.CreateSubscriber(ctx, client.CreateSubscriberRequest{
-			Email:          args.Email,
-			Components:     args.Components,
-			AudienceGroups: args.AudienceGroups,
+			Email:      args.Email,
+			Components: args.Components,
+			Groups:     args.Groups,
 		})
 		if err != nil {
 			return nil, nil, err

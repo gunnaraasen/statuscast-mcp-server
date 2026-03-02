@@ -103,7 +103,7 @@ type Incident struct {
 	ID                 int    `json:"id"`
 	Subject            string `json:"messageSubject"`
 	Message            string `json:"messageText"`
-	IncidentType       int    `json:"incidentType,omitempty"`
+	IncidentType       string `json:"incidentType,omitempty"`
 	Active             bool   `json:"active,omitempty"`
 	AffectedComponents []int  `json:"affectedComponents,omitempty"`
 	SendNotifications  bool   `json:"sendNotifications,omitempty"`
@@ -127,6 +127,8 @@ type ComponentHistoryEntry struct {
 	CountTowardDowntime bool   `json:"countTowardDowntime"`
 	DateChanged         string `json:"dateChanged"`
 	IncidentID          *int   `json:"incidentId,omitempty"`
+	PostID              *int   `json:"postId,omitempty"`
+	GroupID             *int   `json:"groupId,omitempty"`
 	ComponentID         int    `json:"componentId"`
 }
 
@@ -135,8 +137,8 @@ type Subscriber struct {
 	ID             int    `json:"id"`
 	Email          string `json:"email"`
 	Components     []int  `json:"components,omitempty"`
-	AudienceGroups []int  `json:"audienceGroups,omitempty"`
-	CreatedAt      string `json:"createdAt,omitempty"`
+	Groups    []int  `json:"groups,omitempty"`
+	CreatedAt string `json:"createdAt,omitempty"`
 }
 
 // ContentTemplate represents a Statuscast content template.
@@ -167,8 +169,8 @@ type CreateIncidentRequest struct {
 // ID must be set; Active uses a pointer to distinguish false from omitted.
 type UpdateIncidentRequest struct {
 	ID                 int    `json:"id"`
-	Subject            string `json:"messageSubject,omitempty"`
-	Message            string `json:"messageText,omitempty"`
+	Subject            string `json:"messageSubject"`
+	Message            string `json:"messageText"`
 	IncidentType       int    `json:"incidentType,omitempty"`
 	Active             *bool  `json:"active,omitempty"`
 	AffectedComponents []int  `json:"affectedComponents,omitempty"`
@@ -186,20 +188,22 @@ type SearchIncidentsResponse struct {
 	Items      []Incident `json:"items"`
 	TotalItems int        `json:"totalItems"`
 	Pages      int        `json:"pages"`
+	Page       int        `json:"page"`
+	PageSize   int        `json:"pageSize"`
 }
 
 // CreateSubscriberRequest holds the parameters for creating a subscriber.
 type CreateSubscriberRequest struct {
 	Email          string `json:"email"`
-	Components     []int  `json:"components,omitempty"`
-	AudienceGroups []int  `json:"audienceGroups,omitempty"`
+	Components []int `json:"components,omitempty"`
+	Groups     []int `json:"groups,omitempty"`
 }
 
 // CreateContentTemplateRequest holds the parameters for creating a content template.
 type CreateContentTemplateRequest struct {
 	Event      string `json:"event"`
-	Status     string `json:"status,omitempty"`
-	PostType   string `json:"postType,omitempty"`
+	Status     string `json:"status"`
+	PostType   string `json:"postType"`
 	Components []int  `json:"components,omitempty"`
 	Groups     []int  `json:"groups,omitempty"`
 	Subject    string `json:"subject,omitempty"`
