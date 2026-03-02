@@ -98,26 +98,45 @@ func (c *Client) do(ctx context.Context, method, path string, body, out any) err
 
 // --- Data types ---
 
+// IncidentGroup associates an incident with a component group.
+type IncidentGroup struct {
+	ID     int    `json:"id"`
+	Action string `json:"action,omitempty"` // "Add" or "Remove"
+}
+
 // Incident represents a Statuscast incident.
 type Incident struct {
 	ID                 int    `json:"id"`
-	Subject            string `json:"messageSubject"`
-	Message            string `json:"messageText"`
+	Subject            string `json:"messageSubject,omitempty"`
+	Message            string `json:"messageText,omitempty"`
+	Body               string `json:"message,omitempty"` // GET responses may use "message" key
 	IncidentType       string `json:"incidentType,omitempty"`
 	Active             bool   `json:"active,omitempty"`
 	AffectedComponents []int  `json:"affectedComponents,omitempty"`
 	SendNotifications  bool   `json:"sendNotifications,omitempty"`
+	IncidentID         *int   `json:"incidentId,omitempty"`
+	Date               string `json:"date,omitempty"`
+	Time               string `json:"time,omitempty"`
+	CombinedDate       string `json:"combinedDate,omitempty"`
+	SendEmail          bool   `json:"sendEmail,omitempty"`
+	SendSMS            bool   `json:"sendSms,omitempty"`
 }
 
 // Component represents a Statuscast component.
 type Component struct {
-	ID          int    `json:"id"`
-	Name        string `json:"name"`
-	Status      string `json:"status"`
-	Description string `json:"description,omitempty"`
-	ParentID    int    `json:"parentId,omitempty"`
-	IsHidden    bool   `json:"isHidden,omitempty"`
-	ExternalID  string `json:"externalId,omitempty"`
+	ID                  int    `json:"id"`
+	Name                string `json:"name"`
+	Status              string `json:"status"`
+	Description         string `json:"description,omitempty"`
+	ParentID            int    `json:"parentId,omitempty"`
+	IsHidden            bool   `json:"isHidden,omitempty"`
+	ExternalID          string `json:"externalId,omitempty"`
+	PeerDisplayPriority int    `json:"peerDisplayPriority,omitempty"`
+	IconImageSrc        string `json:"iconImageSrc,omitempty"`
+	IsCloudComponent    bool   `json:"isCloudComponent,omitempty"`
+	Level               int    `json:"level,omitempty"`
+	BubbleLesserStatus  bool   `json:"bubbleLesserStatus,omitempty"`
+	LinkedComponents    []int  `json:"linkedComponents,omitempty"`
 }
 
 // ComponentHistoryEntry represents a single status change event in component history.
@@ -157,23 +176,35 @@ type ContentTemplate struct {
 
 // CreateIncidentRequest holds the parameters for creating an incident.
 type CreateIncidentRequest struct {
-	Subject            string `json:"messageSubject"`
-	Message            string `json:"messageText"`
-	IncidentType       int    `json:"incidentType,omitempty"`
-	AffectedComponents []int  `json:"affectedComponents,omitempty"`
-	SendNotifications  bool   `json:"sendNotifications,omitempty"`
-	Active             bool   `json:"active,omitempty"`
+	Subject            string          `json:"messageSubject"`
+	Message            string          `json:"messageText"`
+	IncidentType       int             `json:"incidentType,omitempty"`
+	AffectedComponents []int           `json:"affectedComponents,omitempty"`
+	SendNotifications  bool            `json:"sendNotifications,omitempty"`
+	Active             bool            `json:"active,omitempty"`
+	DateToPost         string          `json:"dateToPost,omitempty"`
+	HappeningNow       bool            `json:"happeningNow,omitempty"`
+	TreatAsDowntime    bool            `json:"treatAsDownTime,omitempty"`
+	EstimatedDuration  int             `json:"estimatedDuration,omitempty"`
+	Groups             []IncidentGroup `json:"groups,omitempty"`
+	ProviderIncidentID string          `json:"providerIncidentId,omitempty"`
 }
 
 // UpdateIncidentRequest holds the parameters for updating an incident.
 // ID must be set; Active uses a pointer to distinguish false from omitted.
 type UpdateIncidentRequest struct {
-	ID                 int    `json:"id"`
-	Subject            string `json:"messageSubject"`
-	Message            string `json:"messageText"`
-	IncidentType       int    `json:"incidentType,omitempty"`
-	Active             *bool  `json:"active,omitempty"`
-	AffectedComponents []int  `json:"affectedComponents,omitempty"`
+	ID                 int             `json:"id"`
+	Subject            string          `json:"messageSubject"`
+	Message            string          `json:"messageText"`
+	IncidentType       int             `json:"incidentType,omitempty"`
+	Active             *bool           `json:"active,omitempty"`
+	AffectedComponents []int           `json:"affectedComponents,omitempty"`
+	DateToPost         string          `json:"dateToPost,omitempty"`
+	HappeningNow       bool            `json:"happeningNow,omitempty"`
+	TreatAsDowntime    bool            `json:"treatAsDownTime,omitempty"`
+	EstimatedDuration  int             `json:"estimatedDuration,omitempty"`
+	Groups             []IncidentGroup `json:"groups,omitempty"`
+	ProviderIncidentID string          `json:"providerIncidentId,omitempty"`
 }
 
 // SearchIncidentsRequest holds the parameters for searching incidents via POST body.
@@ -181,6 +212,7 @@ type SearchIncidentsRequest struct {
 	TextSearch string `json:"textSearch,omitempty"`
 	PageNumber int    `json:"pageNumber,omitempty"`
 	PageSize   int    `json:"pageSize,omitempty"`
+	Sorting    string `json:"sorting,omitempty"` // "Ascending" or "Descending"
 }
 
 // SearchIncidentsResponse wraps the paginated incident search result.
@@ -190,6 +222,7 @@ type SearchIncidentsResponse struct {
 	Pages      int        `json:"pages"`
 	Page       int        `json:"page"`
 	PageSize   int        `json:"pageSize"`
+	Cursor     string     `json:"cursor,omitempty"`
 }
 
 // CreateSubscriberRequest holds the parameters for creating a subscriber.
@@ -202,8 +235,8 @@ type CreateSubscriberRequest struct {
 // CreateContentTemplateRequest holds the parameters for creating a content template.
 type CreateContentTemplateRequest struct {
 	Event      string `json:"event"`
-	Status     string `json:"status"`
-	PostType   string `json:"postType"`
+	Status     string `json:"status,omitempty"`
+	PostType   string `json:"postType,omitempty"`
 	Components []int  `json:"components,omitempty"`
 	Groups     []int  `json:"groups,omitempty"`
 	Subject    string `json:"subject,omitempty"`
@@ -239,13 +272,13 @@ func (c *Client) UpdateIncident(ctx context.Context, req UpdateIncidentRequest) 
 	return &incident, nil
 }
 
-// SearchIncidents searches incidents via POST body and returns the result items.
-func (c *Client) SearchIncidents(ctx context.Context, req SearchIncidentsRequest) ([]Incident, error) {
+// SearchIncidents searches incidents via POST body and returns the full paginated response.
+func (c *Client) SearchIncidents(ctx context.Context, req SearchIncidentsRequest) (*SearchIncidentsResponse, error) {
 	var resp SearchIncidentsResponse
 	if err := c.do(ctx, http.MethodPost, "/incidents", req, &resp); err != nil {
 		return nil, err
 	}
-	return resp.Items, nil
+	return &resp, nil
 }
 
 // ListComponents returns all components.
@@ -258,21 +291,19 @@ func (c *Client) ListComponents(ctx context.Context) ([]Component, error) {
 }
 
 // GetComponentHistory returns historical status entries for a component.
-// Pass id=0 to get history for all components. timeRange accepts values such as
-// ThisWeek, ThisMonth, ThisYear, LastWeek, LastMonth, LastYear, Last7Days,
-// Last30Days, Last60Days.
+// timeRange accepts values such as ThisWeek, ThisMonth, ThisYear, LastWeek,
+// LastMonth, LastYear, Last7Days, Last30Days, Last60Days.
 func (c *Client) GetComponentHistory(ctx context.Context, id int, timeRange string) ([]ComponentHistoryEntry, error) {
+	if id <= 0 {
+		return nil, fmt.Errorf("component id is required and must be a positive integer")
+	}
+
 	params := url.Values{}
 	if timeRange != "" {
 		params.Set("range", timeRange)
 	}
 
-	var path string
-	if id != 0 {
-		path = fmt.Sprintf("/component/%d/history", id)
-	} else {
-		path = "/components/history"
-	}
+	path := fmt.Sprintf("/component/%d/history", id)
 	if len(params) > 0 {
 		path += "?" + params.Encode()
 	}

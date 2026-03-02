@@ -24,8 +24,8 @@ func listComponentsHandler(c *client.Client) mcp.ToolHandlerFor[listComponentsAr
 }
 
 type getComponentHistoryArgs struct {
-	ComponentID int    `json:"component_id,omitempty" jsonschema:"ID of the component to get history for; omit to get history for all components"`
-	Range_      string `json:"range,omitempty"        jsonschema:"Time range for history: ThisWeek, ThisMonth, ThisYear, LastWeek, LastMonth, LastYear, Last7Days, Last30Days, Last60Days"`
+	ComponentID int    `json:"component_id" jsonschema:"ID of the component to get status history for (required)"`
+	Range_      string `json:"range,omitempty" jsonschema:"Time range for history: ThisWeek, ThisMonth, ThisYear, LastWeek, LastMonth, LastYear, Last7Days, Last30Days, Last60Days"`
 }
 
 func getComponentHistoryHandler(c *client.Client) mcp.ToolHandlerFor[getComponentHistoryArgs, any] {

@@ -25,8 +25,8 @@ func listContentTemplatesHandler(c *client.Client) mcp.ToolHandlerFor[listConten
 
 type createContentTemplateArgs struct {
 	Event      string `json:"event"                  jsonschema:"Lifecycle event: NewIncident, UpdateIncident, ResolveIncident, RCAIncident, InvestigatingUpdate, MonitoringUpdate, IdentifiedUpdate (required)"`
-	Status     string `json:"status"                 jsonschema:"Component status (required): Available, Unavailable, DegradedPerformance, Maintenance, Investigating, Monitoring, Identified"`
-	PostType   string `json:"post_type"              jsonschema:"Update type (required): Informational, Closed, RootCause, Investigating, Monitoring, Identified, Migration"`
+	Status     string `json:"status,omitempty"       jsonschema:"Component status: Available, Unavailable, DegradedPerformance, Maintenance, Investigating, Monitoring, Identified"`
+	PostType   string `json:"post_type,omitempty"    jsonschema:"Update type: Informational, Closed, RootCause, Investigating, Monitoring, Identified, Migration"`
 	Subject    string `json:"subject,omitempty"      jsonschema:"Template subject line"`
 	Contents   string `json:"contents,omitempty"     jsonschema:"Template message body"`
 	Components []int  `json:"components,omitempty"   jsonschema:"Component IDs this template applies to"`
