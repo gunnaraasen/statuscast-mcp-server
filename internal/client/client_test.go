@@ -20,12 +20,12 @@ func TestDo_AuthHeader(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gotAuth = r.Header.Get("Authorization")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("{}"))
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 
 	c := newTestClient(srv)
-	c.do(context.Background(), http.MethodGet, "/test", nil, nil) //nolint:errcheck
+	_ = c.do(context.Background(), http.MethodGet, "/test", nil, nil)
 
 	if gotAuth != "Bearer test-token" {
 		t.Errorf("expected 'Bearer test-token', got %q", gotAuth)
@@ -35,7 +35,7 @@ func TestDo_AuthHeader(t *testing.T) {
 func TestDo_APIError(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte(`{"message":"invalid token"}`))
+		_, _ = w.Write([]byte(`{"message":"invalid token"}`))
 	}))
 	defer srv.Close()
 
@@ -61,7 +61,7 @@ func TestDo_UnmarshalResponse(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write(body)
+		_, _ = w.Write(body)
 	}))
 	defer srv.Close()
 
@@ -84,13 +84,13 @@ func TestDo_JSONRequestBody(t *testing.T) {
 		b, _ := io.ReadAll(r.Body)
 		gotBody = string(b)
 		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte("{}"))
+		_, _ = w.Write([]byte("{}"))
 	}))
 	defer srv.Close()
 
 	c := newTestClient(srv)
 	req := CreateIncidentRequest{Subject: "Outage", Message: "Services down"}
-	c.do(context.Background(), http.MethodPost, "/incidents", req, nil) //nolint:errcheck
+	_ = c.do(context.Background(), http.MethodPost, "/incidents", req, nil)
 
 	var parsed map[string]any
 	if err := json.Unmarshal([]byte(gotBody), &parsed); err != nil {

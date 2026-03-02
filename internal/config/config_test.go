@@ -1,14 +1,11 @@
 package config
 
 import (
-	"os"
 	"testing"
 )
 
 func TestLoad_MissingToken(t *testing.T) {
-	os.Unsetenv("STATUSCAST_TOKEN")
-	os.Setenv("STATUSCAST_DOMAIN", "test.statuscast.com")
-	t.Cleanup(func() { os.Unsetenv("STATUSCAST_DOMAIN") })
+	t.Setenv("STATUSCAST_DOMAIN", "test.statuscast.com")
 
 	_, err := Load()
 	if err == nil {
@@ -17,9 +14,7 @@ func TestLoad_MissingToken(t *testing.T) {
 }
 
 func TestLoad_MissingDomain(t *testing.T) {
-	os.Setenv("STATUSCAST_TOKEN", "tok123")
-	os.Unsetenv("STATUSCAST_DOMAIN")
-	t.Cleanup(func() { os.Unsetenv("STATUSCAST_TOKEN") })
+	t.Setenv("STATUSCAST_TOKEN", "tok123")
 
 	_, err := Load()
 	if err == nil {
@@ -28,14 +23,8 @@ func TestLoad_MissingDomain(t *testing.T) {
 }
 
 func TestLoad_Defaults(t *testing.T) {
-	os.Setenv("STATUSCAST_TOKEN", "tok123")
-	os.Setenv("STATUSCAST_DOMAIN", "test.statuscast.com")
-	os.Unsetenv("TRANSPORT")
-	os.Unsetenv("PORT")
-	t.Cleanup(func() {
-		os.Unsetenv("STATUSCAST_TOKEN")
-		os.Unsetenv("STATUSCAST_DOMAIN")
-	})
+	t.Setenv("STATUSCAST_TOKEN", "tok123")
+	t.Setenv("STATUSCAST_DOMAIN", "test.statuscast.com")
 
 	cfg, err := Load()
 	if err != nil {
@@ -50,16 +39,10 @@ func TestLoad_Defaults(t *testing.T) {
 }
 
 func TestLoad_CustomTransport(t *testing.T) {
-	os.Setenv("STATUSCAST_TOKEN", "tok123")
-	os.Setenv("STATUSCAST_DOMAIN", "test.statuscast.com")
-	os.Setenv("TRANSPORT", "http")
-	os.Setenv("PORT", "9090")
-	t.Cleanup(func() {
-		os.Unsetenv("STATUSCAST_TOKEN")
-		os.Unsetenv("STATUSCAST_DOMAIN")
-		os.Unsetenv("TRANSPORT")
-		os.Unsetenv("PORT")
-	})
+	t.Setenv("STATUSCAST_TOKEN", "tok123")
+	t.Setenv("STATUSCAST_DOMAIN", "test.statuscast.com")
+	t.Setenv("TRANSPORT", "http")
+	t.Setenv("PORT", "9090")
 
 	cfg, err := Load()
 	if err != nil {

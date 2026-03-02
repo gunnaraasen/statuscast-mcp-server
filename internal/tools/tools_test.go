@@ -32,7 +32,7 @@ func TestRegisterAll(t *testing.T) {
 	if err != nil {
 		t.Fatalf("client Connect: %v", err)
 	}
-	defer session.Close()
+	defer func() { _ = session.Close() }()
 
 	var count int
 	for _, err := range session.Tools(ctx, nil) {
@@ -67,7 +67,7 @@ func TestToolNames(t *testing.T) {
 	if err != nil {
 		t.Fatalf("client Connect: %v", err)
 	}
-	defer session.Close()
+	defer func() { _ = session.Close() }()
 
 	want := map[string]bool{
 		"create_incident":         true,
