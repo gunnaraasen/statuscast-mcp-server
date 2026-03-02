@@ -9,9 +9,9 @@ import (
 )
 
 type createSubscriberArgs struct {
-	Email          string   `json:"email"                    jsonschema:"Email address of the subscriber (required)"`
-	Components     []string `json:"components,omitempty"     jsonschema:"Component IDs the subscriber wants to receive notifications for"`
-	AudienceGroups []string `json:"audience_groups,omitempty" jsonschema:"Audience group IDs to add the subscriber to"`
+	Email          string `json:"email"                     jsonschema:"Email address of the subscriber (required)"`
+	Components     []int  `json:"components,omitempty"      jsonschema:"Component IDs the subscriber wants to receive notifications for"`
+	AudienceGroups []int  `json:"audience_groups,omitempty" jsonschema:"Audience group IDs to add the subscriber to"`
 }
 
 func createSubscriberHandler(c *client.Client) mcp.ToolHandlerFor[createSubscriberArgs, any] {

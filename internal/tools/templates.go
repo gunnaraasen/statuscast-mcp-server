@@ -24,19 +24,25 @@ func listContentTemplatesHandler(c *client.Client) mcp.ToolHandlerFor[listConten
 }
 
 type createContentTemplateArgs struct {
-	Name    string `json:"name"           jsonschema:"Template name for identification (required)"`
-	Subject string `json:"subject"        jsonschema:"Template subject line (required)"`
-	Message string `json:"message"        jsonschema:"Template message body (required)"`
-	Type    string `json:"type,omitempty" jsonschema:"Template type (e.g. incident, maintenance)"`
+	Event      string `json:"event"                  jsonschema:"Lifecycle event: NewIncident, UpdateIncident, ResolveIncident, RCAIncident, InvestigatingUpdate, MonitoringUpdate, IdentifiedUpdate (required)"`
+	Status     string `json:"status,omitempty"       jsonschema:"Component status: Available, Unavailable, DegradedPerformance, Maintenance, Investigating, Monitoring, Identified"`
+	PostType   string `json:"post_type,omitempty"    jsonschema:"Update type: Informational, Closed, RootCause, Investigating, Monitoring, Identified, Migration"`
+	Subject    string `json:"subject,omitempty"      jsonschema:"Template subject line"`
+	Contents   string `json:"contents,omitempty"     jsonschema:"Template message body"`
+	Components []int  `json:"components,omitempty"   jsonschema:"Component IDs this template applies to"`
+	Groups     []int  `json:"groups,omitempty"       jsonschema:"Group IDs this template applies to"`
 }
 
 func createContentTemplateHandler(c *client.Client) mcp.ToolHandlerFor[createContentTemplateArgs, any] {
 	return func(ctx context.Context, _ *mcp.CallToolRequest, args createContentTemplateArgs) (*mcp.CallToolResult, any, error) {
 		template, err := c.CreateContentTemplate(ctx, client.CreateContentTemplateRequest{
-			Name:    args.Name,
-			Subject: args.Subject,
-			Message: args.Message,
-			Type:    args.Type,
+			Event:      args.Event,
+			Status:     args.Status,
+			PostType:   args.PostType,
+			Subject:    args.Subject,
+			Contents:   args.Contents,
+			Components: args.Components,
+			Groups:     args.Groups,
 		})
 		if err != nil {
 			return nil, nil, err

@@ -9,12 +9,12 @@ import (
 )
 
 type createIncidentArgs struct {
-	Subject            string   `json:"subject"             jsonschema:"The incident subject/title (required)"`
-	Message            string   `json:"message"             jsonschema:"The incident message body (required)"`
-	Type               string   `json:"type,omitempty"      jsonschema:"Incident type (e.g. investigating, identified, monitoring, resolved)"`
-	AffectedComponents []string `json:"affected_components,omitempty" jsonschema:"Component IDs affected by this incident"`
-	AutoPublish        bool     `json:"auto_publish,omitempty" jsonschema:"Notify subscribers immediately when true"`
-	AutoClose          bool     `json:"auto_close,omitempty"   jsonschema:"Auto-close incident when monitoring resolves when true"`
+	Subject            string `json:"subject"                        jsonschema:"The incident subject/title (required)"`
+	Message            string `json:"message"                        jsonschema:"The incident message body (required)"`
+	IncidentType       int    `json:"incident_type,omitempty"        jsonschema:"Incident type: 1=ServiceUnavailable, 2=ScheduledMaintenance, 3=Informational"`
+	AffectedComponents []int  `json:"affected_components,omitempty"  jsonschema:"Component IDs affected by this incident"`
+	SendNotifications  bool   `json:"send_notifications,omitempty"   jsonschema:"Notify subscribers immediately when true"`
+	Active             bool   `json:"active,omitempty"               jsonschema:"Set to true to make the incident active/published"`
 }
 
 func createIncidentHandler(c *client.Client) mcp.ToolHandlerFor[createIncidentArgs, any] {
@@ -22,10 +22,10 @@ func createIncidentHandler(c *client.Client) mcp.ToolHandlerFor[createIncidentAr
 		incident, err := c.CreateIncident(ctx, client.CreateIncidentRequest{
 			Subject:            args.Subject,
 			Message:            args.Message,
-			Type:               args.Type,
+			IncidentType:       args.IncidentType,
 			AffectedComponents: args.AffectedComponents,
-			AutoPublish:        args.AutoPublish,
-			AutoClose:          args.AutoClose,
+			SendNotifications:  args.SendNotifications,
+			Active:             args.Active,
 		})
 		if err != nil {
 			return nil, nil, err
@@ -38,7 +38,7 @@ func createIncidentHandler(c *client.Client) mcp.ToolHandlerFor[createIncidentAr
 }
 
 type getIncidentArgs struct {
-	IncidentID string `json:"incident_id" jsonschema:"The ID of the incident to retrieve (required)"`
+	IncidentID int `json:"incident_id" jsonschema:"The ID of the incident to retrieve (required)"`
 }
 
 func getIncidentHandler(c *client.Client) mcp.ToolHandlerFor[getIncidentArgs, any] {
@@ -55,21 +55,23 @@ func getIncidentHandler(c *client.Client) mcp.ToolHandlerFor[getIncidentArgs, an
 }
 
 type updateIncidentArgs struct {
-	IncidentID string `json:"incident_id"      jsonschema:"The ID of the incident to update (required)"`
-	Type       string `json:"type,omitempty"   jsonschema:"Updated incident type"`
-	Subject    string `json:"subject,omitempty" jsonschema:"Updated incident subject/title"`
-	Message    string `json:"message,omitempty" jsonschema:"Updated incident message body"`
-	Status     string `json:"status,omitempty" jsonschema:"Updated incident status (e.g. investigating, resolved)"`
+	IncidentID         int    `json:"incident_id"                    jsonschema:"The ID of the incident to update (required)"`
+	IncidentType       int    `json:"incident_type,omitempty"        jsonschema:"Updated incident type: 1=ServiceUnavailable, 2=ScheduledMaintenance, 3=Informational"`
+	Subject            string `json:"subject,omitempty"              jsonschema:"Updated incident subject/title"`
+	Message            string `json:"message,omitempty"              jsonschema:"Updated incident message body"`
+	Active             *bool  `json:"active,omitempty"               jsonschema:"Set to true to activate or false to deactivate/resolve the incident"`
+	AffectedComponents []int  `json:"affected_components,omitempty"  jsonschema:"Updated list of affected component IDs"`
 }
 
 func updateIncidentHandler(c *client.Client) mcp.ToolHandlerFor[updateIncidentArgs, any] {
 	return func(ctx context.Context, _ *mcp.CallToolRequest, args updateIncidentArgs) (*mcp.CallToolResult, any, error) {
 		incident, err := c.UpdateIncident(ctx, client.UpdateIncidentRequest{
-			ID:      args.IncidentID,
-			Type:    args.Type,
-			Subject: args.Subject,
-			Message: args.Message,
-			Status:  args.Status,
+			ID:                 args.IncidentID,
+			IncidentType:       args.IncidentType,
+			Subject:            args.Subject,
+			Message:            args.Message,
+			Active:             args.Active,
+			AffectedComponents: args.AffectedComponents,
 		})
 		if err != nil {
 			return nil, nil, err
@@ -82,17 +84,17 @@ func updateIncidentHandler(c *client.Client) mcp.ToolHandlerFor[updateIncidentAr
 }
 
 type searchIncidentsArgs struct {
-	Query  string `json:"query,omitempty"  jsonschema:"Search query string to filter incidents by subject or message"`
-	Status string `json:"status,omitempty" jsonschema:"Filter by status (e.g. investigating, resolved)"`
-	Limit  int    `json:"limit,omitempty"  jsonschema:"Maximum number of incidents to return"`
+	TextSearch string `json:"text_search,omitempty" jsonschema:"Search query string to filter incidents by subject or message"`
+	PageNumber int    `json:"page_number,omitempty" jsonschema:"Page number for pagination (1-based)"`
+	PageSize   int    `json:"page_size,omitempty"   jsonschema:"Number of incidents per page"`
 }
 
 func searchIncidentsHandler(c *client.Client) mcp.ToolHandlerFor[searchIncidentsArgs, any] {
 	return func(ctx context.Context, _ *mcp.CallToolRequest, args searchIncidentsArgs) (*mcp.CallToolResult, any, error) {
 		incidents, err := c.SearchIncidents(ctx, client.SearchIncidentsRequest{
-			Query:  args.Query,
-			Status: args.Status,
-			Limit:  args.Limit,
+			TextSearch: args.TextSearch,
+			PageNumber: args.PageNumber,
+			PageSize:   args.PageSize,
 		})
 		if err != nil {
 			return nil, nil, err
@@ -123,6 +125,6 @@ func RegisterIncidentTools(s *mcp.Server, c *client.Client) {
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "search_incidents",
-		Description: "Search and list Statuscast incidents with optional filters by query, status, or limit",
+		Description: "Search and list Statuscast incidents with optional text search and pagination",
 	}, searchIncidentsHandler(c))
 }

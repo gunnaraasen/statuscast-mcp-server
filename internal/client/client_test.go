@@ -55,7 +55,7 @@ func TestDo_APIError(t *testing.T) {
 }
 
 func TestDo_UnmarshalResponse(t *testing.T) {
-	incident := Incident{ID: "inc_123", Subject: "Test Incident"}
+	incident := Incident{ID: 123, Subject: "Test Incident"}
 	body, _ := json.Marshal(incident)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -70,8 +70,8 @@ func TestDo_UnmarshalResponse(t *testing.T) {
 	if err := c.do(context.Background(), http.MethodGet, "/incidents/inc_123", nil, &got); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if got.ID != "inc_123" {
-		t.Errorf("expected ID=inc_123, got %q", got.ID)
+	if got.ID != 123 {
+		t.Errorf("expected ID=123, got %d", got.ID)
 	}
 	if got.Subject != "Test Incident" {
 		t.Errorf("expected Subject='Test Incident', got %q", got.Subject)
@@ -96,8 +96,8 @@ func TestDo_JSONRequestBody(t *testing.T) {
 	if err := json.Unmarshal([]byte(gotBody), &parsed); err != nil {
 		t.Fatalf("request body is not valid JSON: %v", err)
 	}
-	if parsed["subject"] != "Outage" {
-		t.Errorf("expected subject='Outage', got %v", parsed["subject"])
+	if parsed["messageSubject"] != "Outage" {
+		t.Errorf("expected messageSubject='Outage', got %v", parsed["messageSubject"])
 	}
 }
 
