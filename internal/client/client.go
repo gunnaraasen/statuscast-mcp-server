@@ -209,10 +209,11 @@ type UpdateIncidentRequest struct {
 
 // SearchIncidentsRequest holds the parameters for searching incidents via POST body.
 type SearchIncidentsRequest struct {
-	TextSearch string `json:"textSearch,omitempty"`
-	PageNumber int    `json:"pageNumber,omitempty"`
-	PageSize   int    `json:"pageSize,omitempty"`
-	Sorting    string `json:"sorting,omitempty"` // "Ascending" or "Descending"
+	TextSearch         string `json:"textSearch,omitempty"`
+	PageNumber         int    `json:"pageNumber,omitempty"`
+	PageSize           int    `json:"pageSize,omitempty"`
+	Sorting            string `json:"sorting,omitempty"` // "Ascending" or "Descending"
+	AffectedComponents []int  `json:"affectedComponents,omitempty"`
 }
 
 // SearchIncidentsResponse wraps the paginated incident search result.

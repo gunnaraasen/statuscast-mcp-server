@@ -143,19 +143,21 @@ func updateIncidentHandler(c *client.Client) mcp.ToolHandlerFor[updateIncidentAr
 }
 
 type searchIncidentsArgs struct {
-	TextSearch string `json:"text_search,omitempty" jsonschema:"Search query string to filter incidents by subject or message"`
-	PageNumber int    `json:"page_number,omitempty" jsonschema:"Page number for pagination (1-based)"`
-	PageSize   int    `json:"page_size,omitempty"   jsonschema:"Number of incidents per page"`
-	Sorting    string `json:"sorting,omitempty"     jsonschema:"Sort order: Ascending or Descending"`
+	TextSearch         string `json:"text_search,omitempty"         jsonschema:"Search query string to filter incidents by subject or message"`
+	PageNumber         int    `json:"page_number,omitempty"         jsonschema:"Page number for pagination (1-based)"`
+	PageSize           int    `json:"page_size,omitempty"           jsonschema:"Number of incidents per page"`
+	Sorting            string `json:"sorting,omitempty"             jsonschema:"Sort order: Ascending or Descending"`
+	AffectedComponents []int  `json:"affected_components,omitempty" jsonschema:"Filter by component IDs affected by the incident"`
 }
 
 func searchIncidentsHandler(c *client.Client) mcp.ToolHandlerFor[searchIncidentsArgs, any] {
 	return func(ctx context.Context, _ *mcp.CallToolRequest, args searchIncidentsArgs) (*mcp.CallToolResult, any, error) {
 		resp, err := c.SearchIncidents(ctx, client.SearchIncidentsRequest{
-			TextSearch: args.TextSearch,
-			PageNumber: args.PageNumber,
-			PageSize:   args.PageSize,
-			Sorting:    args.Sorting,
+			TextSearch:         args.TextSearch,
+			PageNumber:         args.PageNumber,
+			PageSize:           args.PageSize,
+			Sorting:            args.Sorting,
+			AffectedComponents: args.AffectedComponents,
 		})
 		if err != nil {
 			return nil, nil, err
